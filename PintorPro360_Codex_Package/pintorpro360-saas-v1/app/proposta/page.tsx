@@ -1,26 +1,86 @@
+"use client";
+
+import { ProposalActions } from "../../components/proposal/proposal-actions";
+import { ProposalDocument } from "../../components/proposal/proposal-document";
 import { getQuoteTotal, getRemainingValue, mockClient, mockDiagnostic, mockQuote } from "../../lib/mock/pintorpro-data";
+import type { ProposalDocumentData } from "../../lib/types/proposal";
 import { formatCurrency } from "../../lib/utils/format";
 
-export default function PropostaPage() {
+const SCOPE_ITEMS = [
+  "Preparação básica da área conforme avaliação.",
+  "Organização da execução para reduzir sujeira e retrabalho.",
+  "Aplicação conforme condições combinadas com o cliente.",
+  "Revisão básica de acabamento antes da finalização."
+];
+
+const INCLUDED_ITEMS = [
+  "Mão de obra descrita no escopo da proposta.",
+  "Preparação básica da superfície conforme necessidade.",
+  "Aplicação da pintura nas áreas combinadas.",
+  "Revisão básica de acabamento.",
+  "Limpeza básica da área de trabalho ao final."
+];
+
+const EXCLUDED_ITEMS = [
+  "Correção de infiltrações estruturais.",
+  "Serviços elétricos, hidráulicos ou alvenaria pesada.",
+  "Troca de reboco comprometido.",
+  "Mudança de cor ou escopo após aprovação.",
+  "Serviços em áreas não descritas nesta proposta."
+];
+
+function buildProposalData(): ProposalDocumentData {
   const finalValue = getQuoteTotal();
   const remainingValue = getRemainingValue();
-  const generatedDateText = new Date().toLocaleDateString("pt-BR");
-  const validUntil = new Date(); validUntil.setDate(validUntil.getDate() + 7);
+  const generatedDate = new Date();
+  const validUntil = new Date(generatedDate);
+  validUntil.setDate(validUntil.getDate() + 7);
+
+  return {
+    generatedDateText: generatedDate.toLocaleDateString("pt-BR"),
+    validUntilText: validUntil.toLocaleDateString("pt-BR"),
+    clientName: mockClient.name,
+    clientLocation: `${mockClient.neighborhood} • ${mockClient.city}`,
+    scoreText: "100/100",
+    serviceType: "Pintura interna com preparação de superfície",
+    finalValueFormatted: formatCurrency(finalValue),
+    downPaymentFormatted: formatCurrency(mockQuote.downPayment),
+    remainingValueFormatted: formatCurrency(remainingValue),
+    surfaceType: "Repintura",
+    areaType: "Área interna",
+    problems: mockDiagnostic.problems.map((problem) => problem.replace("_", " ").replace(/^./, (char) => char.toUpperCase())),
+    notes: mockDiagnostic.notes,
+    scopeItems: SCOPE_ITEMS,
+    includedItems: INCLUDED_ITEMS,
+    excludedItems: EXCLUDED_ITEMS,
+    deadline: mockQuote.deadline,
+    warranty: mockQuote.warranty,
+    paymentTerms: mockQuote.paymentTerms
+  };
+}
+
+
+
+function buildWhatsappMessage(data: ProposalDocumentData) {
+  return [
+    `Olá ${data.clientName}!`,
+    "Sua Proposta Inteligente de Pintura está pronta ✅",
+    `Investimento total: ${data.finalValueFormatted}`,
+    `Entrada: ${data.downPaymentFormatted} | Restante: ${data.remainingValueFormatted}`,
+    `Prazo: ${data.deadline}`,
+    "Posso seguir com a aprovação e agendamento?"
+  ].join("\n");
+}
+
+export default function PropostaPage() {
+  const proposalData = buildProposalData();
+  const whatsappMessage = buildWhatsappMessage(proposalData);
+  const whatsappUrl = `https://wa.me/${mockClient.whatsapp}?text=${encodeURIComponent(whatsappMessage)}`;
+
   return (
     <section className="proposal premiumProposal">
-      <div className="proposalActions"><button type="button" className="primaryButton" onClick={() => window.print()}>Gerar PDF da proposta</button></div>
-      <div className="proposalDocument">
-        <div className="proposalCover"><div><p className="proposalKicker">PintorPro 360</p><h2>Proposta Inteligente de Pintura</h2><p>Diagnóstico, escopo, investimento e condições apresentados de forma clara para aumentar confiança, valorizar o serviço e reduzir mal-entendidos.</p></div><div className="proposalMetaBox"><span>Proposta Nº 0001</span><strong>{generatedDateText}</strong></div></div>
-        <div className="proposalHero"><div><p className="label">Cliente</p><h2>{mockClient.name}</h2><p>{mockClient.neighborhood} • {mockClient.city}</p></div><div className="score premiumScore"><strong>100/100</strong><span>Score Proposta360</span></div></div>
-        <div className="proposalExecutive"><div><p className="label">Resumo profissional</p><h3>Serviço proposto</h3><p>{mockQuote.serviceType}. Esta proposta organiza o serviço de pintura em etapas claras, com diagnóstico da superfície, escopo, condições, investimento e orientações para aprovação.</p></div><div className="investmentHighlight"><span>Investimento total</span><strong>{formatCurrency(finalValue)}</strong><small>Entrada: {formatCurrency(mockQuote.downPayment)} • Restante: {formatCurrency(remainingValue)}</small></div></div>
-        <div className="premiumGrid"><ProposalSection title="Diagnóstico técnico" badge="Atenção alta"><p><strong>Superfície:</strong> {mockDiagnostic.surfaceType} • {mockDiagnostic.areaType}</p><p><strong>Problemas observados:</strong> {mockDiagnostic.problems.join(", ")}</p><p>{mockDiagnostic.notes}</p><p className="technicalNote">A presença de umidade, mofo ou infiltração exige atenção antes da pintura, pois pode comprometer aderência, acabamento e durabilidade.</p></ProposalSection><ProposalSection title="Escopo contratado"><p>{mockQuote.serviceType}</p><ul className="list"><li>Preparação básica da área conforme avaliação.</li><li>Organização da execução para reduzir sujeira e retrabalho.</li><li>Aplicação conforme condições combinadas com o cliente.</li><li>Revisão básica de acabamento antes da finalização.</li></ul></ProposalSection></div>
-        <div className="premiumGrid"><ProposalSection title="Está incluso"><ul className="premiumList"><li>Mão de obra descrita no escopo da proposta.</li><li>Preparação básica da superfície conforme necessidade.</li><li>Aplicação da pintura nas áreas combinadas.</li><li>Revisão básica de acabamento.</li><li>Limpeza básica da área de trabalho ao final.</li></ul></ProposalSection><ProposalSection title="Não está incluso"><ul className="premiumList dangerList"><li>Correção de infiltrações estruturais.</li><li>Serviços elétricos, hidráulicos ou alvenaria pesada.</li><li>Troca de reboco comprometido.</li><li>Mudança de cor ou escopo após aprovação.</li><li>Serviços em áreas não descritas nesta proposta.</li></ul></ProposalSection></div>
-        <div className="proposalValueBlock"><div><p className="label">Valorização profissional</p><h3>Por que este investimento?</h3><p>O valor considera não apenas a aplicação da tinta, mas também o tempo de preparação, proteção do ambiente, análise da superfície, organização da execução, acabamento e clareza no combinado.</p></div><div className="conditionsBox"><h3>Condições comerciais</h3><p><strong>Prazo:</strong> {mockQuote.deadline}</p><p><strong>Garantia:</strong> {mockQuote.warranty}</p><p><strong>Pagamento:</strong> {mockQuote.paymentTerms}</p></div></div>
-        <div className="proposalClosingGrid"><div className="nextStepsBox"><p className="label">Próximos passos</p><h3>Como aprovar e iniciar</h3><ol><li>Confirmar aprovação pelo WhatsApp.</li><li>Alinhar data de início.</li><li>Confirmar entrada, quando aplicável.</li><li>Liberar o ambiente.</li></ol></div><div className="validityBox"><p className="label">Validade da proposta</p><h3>{validUntil.toLocaleDateString("pt-BR")}</h3><p>Após esta data, valores, prazos e condições podem ser revisados.</p></div></div>
-        <div className="approvalBox"><div><p className="label">Aprovação do cliente</p><h3>Confirmação da proposta</h3><p>Declaro estar ciente do escopo, investimento, prazo, garantia, condições de pagamento, itens inclusos, itens não inclusos e próximos passos.</p></div><div className="signatureArea"><div className="signatureLine" /><span>Assinatura / aceite do cliente</span></div></div>
-        <footer className="proposalFooter"><strong>PintorPro 360</strong><span>Proposta gerada para demonstrar organização, clareza, profissionalismo e segurança no atendimento de pintura.</span></footer>
-      </div>
+      <ProposalActions whatsappMessage={whatsappMessage} whatsappUrl={whatsappUrl} />
+      <ProposalDocument data={proposalData} />
     </section>
   );
 }
-function ProposalSection({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) { return <div className="proposalSection"><div className="proposalSectionHeader"><h3>{title}</h3>{badge ? <span className="miniBadge">{badge}</span> : null}</div>{children}</div>; }
