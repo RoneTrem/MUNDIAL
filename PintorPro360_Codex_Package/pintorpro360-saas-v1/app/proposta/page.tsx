@@ -60,7 +60,6 @@ function buildProposalData(): ProposalDocumentData {
 }
 
 
-
 function buildWhatsappMessage(data: ProposalDocumentData) {
   return [
     `Olá ${data.clientName}!`,
