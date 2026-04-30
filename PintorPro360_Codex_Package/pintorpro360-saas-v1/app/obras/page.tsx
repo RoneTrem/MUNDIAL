@@ -1,0 +1,3 @@
+export default function Page() {
+  return <section><div className="pageHeader"><p className="eyebrow">PintorPro 360</p><h1>Obras</h1><p>Acompanhe obras aprovadas, checklist de execução, pagamentos, fotos e pendências.</p></div><div className="contentGrid twoColumns"><div className="premiumCard"><span className="statusBadge">Módulo preparado</span><h2>Base criada com sucesso</h2><p>Esta página já existe na estrutura real do SaaS. A próxima etapa será transformar este módulo em funcionalidade real.</p></div><div className="premiumCard"><h2>Próximas melhorias</h2><ul className="cleanList"><li>Criar formulário real.</li><li>Adicionar validações.</li><li>Conectar com Supabase.</li><li>Integrar ao fluxo da Proposta Inteligente.</li></ul></div></div></section>;
+}
