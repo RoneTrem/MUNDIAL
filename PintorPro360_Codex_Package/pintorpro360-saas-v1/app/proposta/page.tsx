@@ -1,3 +1,5 @@
+import { ProposalActions } from "../../components/proposta/proposal-actions";
+import { ProposalSection } from "../../components/proposta/proposal-section";
 import { getQuoteTotal, getRemainingValue, mockClient, mockDiagnostic, mockQuote } from "../../lib/mock/pintorpro-data";
 import { formatCurrency } from "../../lib/utils/format";
 
@@ -5,10 +7,15 @@ export default function PropostaPage() {
   const finalValue = getQuoteTotal();
   const remainingValue = getRemainingValue();
   const generatedDateText = new Date().toLocaleDateString("pt-BR");
-  const validUntil = new Date(); validUntil.setDate(validUntil.getDate() + 7);
+  const validUntil = new Date();
+  validUntil.setDate(validUntil.getDate() + 7);
+
+  const whatsappText = `Olá, ${mockClient.name}. Segue sua proposta de pintura no valor de ${formatCurrency(finalValue)}. Validade até ${validUntil.toLocaleDateString("pt-BR")}.`;
+  const whatsappUrl = `https://wa.me/55${mockClient.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(whatsappText)}`;
+
   return (
     <section className="proposal premiumProposal">
-      <div className="proposalActions"><button type="button" className="primaryButton" onClick={() => window.print()}>Gerar PDF da proposta</button></div>
+      <ProposalActions whatsappUrl={whatsappUrl} whatsappText={whatsappText} />
       <div className="proposalDocument">
         <div className="proposalCover"><div><p className="proposalKicker">PintorPro 360</p><h2>Proposta Inteligente de Pintura</h2><p>Diagnóstico, escopo, investimento e condições apresentados de forma clara para aumentar confiança, valorizar o serviço e reduzir mal-entendidos.</p></div><div className="proposalMetaBox"><span>Proposta Nº 0001</span><strong>{generatedDateText}</strong></div></div>
         <div className="proposalHero"><div><p className="label">Cliente</p><h2>{mockClient.name}</h2><p>{mockClient.neighborhood} • {mockClient.city}</p></div><div className="score premiumScore"><strong>100/100</strong><span>Score Proposta360</span></div></div>
@@ -23,4 +30,3 @@ export default function PropostaPage() {
     </section>
   );
 }
-function ProposalSection({ title, badge, children }: { title: string; badge?: string; children: React.ReactNode }) { return <div className="proposalSection"><div className="proposalSectionHeader"><h3>{title}</h3>{badge ? <span className="miniBadge">{badge}</span> : null}</div>{children}</div>; }
